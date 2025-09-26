@@ -14,11 +14,17 @@ class _ObjectDetectionScreenState extends State<ObjectDetectionScreen> {
   File? _image;
   List<dynamic>? _results;
   bool _isLoading = false;
+  // Variável de estado para controlar a seleção de imagem
+  bool _isPickingImage = false;
 
   Future<void> _pickImage() async {
+    // Adiciona uma guarda para evitar múltiplas chamadas
+    if (_isPickingImage) return;
+
     setState(() {
+      _isPickingImage = true;
       _isLoading = true;
-      _results = null;
+      _results = null; // Limpa os resultados anteriores
     });
 
     try {
@@ -42,6 +48,7 @@ class _ObjectDetectionScreenState extends State<ObjectDetectionScreen> {
           });
         }
       } else {
+        // Se o usuário cancelou a seleção
         setState(() {
           _isLoading = false;
         });
@@ -49,7 +56,9 @@ class _ObjectDetectionScreenState extends State<ObjectDetectionScreen> {
     } catch (e) {
       print("Erro ao executar o modelo: $e");
     } finally {
+      // Garante que o estado seja redefinido após a conclusão (com ou sem erro)
       setState(() {
+        _isPickingImage = false;
         _isLoading = false;
       });
     }
@@ -102,7 +111,8 @@ class _ObjectDetectionScreenState extends State<ObjectDetectionScreen> {
                         : Container(),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: _isLoading ? null : _pickImage,
+              // Desativa o botão se já estiver selecionando ou carregando
+              onPressed: _isLoading || _isPickingImage ? null : _pickImage,
               icon: const Icon(Icons.image),
               label: const Text("Selecionar Imagem"),
               style: ElevatedButton.styleFrom(
